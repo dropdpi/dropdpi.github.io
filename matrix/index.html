@@ -247,7 +247,7 @@
                 // Fetch real key from API
                 try {
                     const randomId = "matrix_" + Math.random().toString(36).substring(2, 8);
-                    const res = await fetch("/api/get_test_vless", {
+                    const res = await fetch("https://dropdpi.ink/api/get_test_vless", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email: randomId })
@@ -288,7 +288,7 @@
                         scrollToBottom();
                         
                         await sleep(500);
-                        await typeText("> Link allocated. Download Karing App to connect.", 40, terminal);
+                        await typeText("> Formulating exfiltration route. Download Karing App to connect.", 40, terminal);
                     } else {
                         await typeText("> Error communicating with Node. System overloaded.", 50, terminal);
                     }
