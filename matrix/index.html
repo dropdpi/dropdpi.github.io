@@ -242,59 +242,16 @@
                 await typeText("Welcome to the real world.", 60, terminal);
                 await sleep(500);
 
-                await typeText("> Generating real key...", 30, terminal);
+                await typeText("> Initializing secure session...", 30, terminal);
+                await sleep(500);
+                await typeText("> Connection routed through encrypted proxy.", 30, terminal);
+                await typeText("> Download Karing / AmneziaWG app to connect.", 30, terminal);
                 
-                // Fetch real key from API
-                try {
-                    const randomId = "matrix_" + Math.random().toString(36).substring(2, 8);
-                    const res = await fetch("https://dropdpi.ink/api/get_test_vless", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email: randomId })
-                    });
-                    const data = await res.json();
-                    
-                    if (data.status === "ok") {
-                        const keyBox = document.createElement("div");
-                        keyBox.id = "key-box";
-                        keyBox.textContent = data.link;
-                        terminal.appendChild(keyBox);
-                        
-                        const copyBtn = document.createElement("button");
-                        copyBtn.className = "copy-btn";
-                        copyBtn.textContent = "[ COPY KEY ]";
-                        copyBtn.onclick = () => {
-                            navigator.clipboard.writeText(data.link);
-                            copyBtn.textContent = "[ COPIED ! ]";
-                            setTimeout(() => { copyBtn.textContent = "[ COPY KEY ]" }, 2000);
-                        };
-                        
-                        const actionDiv = document.createElement("div");
-                        actionDiv.style.marginTop = "10px";
-                        actionDiv.appendChild(copyBtn);
-                        
-                        const karingBtn = document.createElement("button");
-                        karingBtn.className = "copy-btn";
-                        karingBtn.style.marginLeft = "10px";
-                        karingBtn.style.background = "#fff";
-                        karingBtn.style.color = "#000";
-                        karingBtn.textContent = "[ OPEN IN KARING ]";
-                        karingBtn.onclick = () => {
-                            window.location.href = data.link;
-                        };
-                        actionDiv.appendChild(karingBtn);
-                        
-                        terminal.appendChild(actionDiv);
-                        scrollToBottom();
-                        
-                        await sleep(500);
-                        await typeText("> Formulating exfiltration route. Download Karing App to connect.", 40, terminal);
-                    } else {
-                        await typeText("> Error communicating with Node. System overloaded.", 50, terminal);
-                    }
-                } catch (e) {
-                    await typeText("> Error communicating with Node. " + e.message, 50, terminal);
-                }
+                const linkDiv = document.createElement("div");
+                linkDiv.style.marginTop = "15px";
+                linkDiv.innerHTML = '<a href="https://dropdpi.ink" target="_blank" style="color:var(--text-color); font-weight:bold; text-decoration:underline;">[ VISIT MAIN PORTAL ]</a>';
+                terminal.appendChild(linkDiv);
+                scrollToBottom();
 
             } else {
                 await typeText("> Ignorance is bliss.", 50, terminal);
