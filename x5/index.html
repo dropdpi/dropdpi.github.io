@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X5 Media DevOps Platform Simulator | Lead DevOps AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #0f1520;
+            --bg-panel: #131b28;
+            --bg-input: #080c12;
+            --border-color: #1e2a3a;
+            --border-accent: #2e4157;
+            --text-main: #d3dae3;
+            --text-dim: #708090;
+            --x5-green: #2ecc71;
+            --x5-accent: #00e676;
+            --x5-cyan: #00e5ff;
+            --x5-red: #ff5252;
+            --x5-orange: #ff9100;
+            --x5-purple: #b388ff;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-sans: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 14px;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Top Bar */
+        header {
+            background: linear-gradient(90deg, #0b1118 0%, #101c2c 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand-block {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge-x5 {
+            background: rgba(0, 230, 118, 0.12);
+            color: var(--x5-accent);
+            border: 1px solid rgba(0, 230, 118, 0.35);
+            padding: 4px 10px;
+            font-weight: 700;
+            border-radius: 4px;
+            letter-spacing: 1px;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .brand-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-sub {
+            color: var(--text-dim);
+            font-size: 12px;
+        }
+
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--x5-accent);
+            box-shadow: 0 0 10px var(--x5-accent);
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+
+        .nav-back {
+            color: var(--x5-cyan);
+            text-decoration: none;
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            padding: 5px 12px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+
+        .nav-back:hover {
+            background: rgba(0, 229, 255, 0.1);
+            border-color: var(--x5-cyan);
+        }
+
+        /* Layout Grid */
+        .workspace {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 320px 1fr 300px;
+            gap: 1px;
+            background-color: var(--border-color);
+            min-height: calc(100vh - 65px);
+        }
+
+        @media (max-width: 1100px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background-color: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .panel-header {
+            padding: 12px 18px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        .panel-header span.highlight {
+            color: var(--x5-accent);
+        }
+
+        .panel-body {
+            padding: 18px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Profile Card */
+        .lead-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .lead-avatar-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .avatar-box {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 1px solid var(--x5-cyan);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .lead-info-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .lead-info-role {
+            font-size: 11px;
+            color: var(--x5-accent);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .meta-list li {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+            padding-bottom: 4px;
+        }
+
+        .meta-list li .label {
+            color: var(--text-dim);
+        }
+
+        .meta-list li .val {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        /* Scope & Systems */
+        .section-subhead {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--x5-cyan);
+            margin: 16px 0 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .service-pill-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .service-pill {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--text-main);
+        }
+
+        .service-pill.active {
+            border-color: var(--x5-accent);
+            color: var(--x5-accent);
+        }
+
+        /* Chat / Console Area */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .messages-scroll {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: #090d13;
+        }
+
+        .msg-bubble {
+            display: flex;
+            flex-direction: column;
+            max-width: 90%;
+            border-radius: 6px;
+            padding: 14px 18px;
+            line-height: 1.6;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg-lead {
+            align-self: flex-start;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--x5-accent);
+        }
+
+        .msg-user {
+            align-self: flex-end;
+            background: #152438;
+            border: 1px solid #243e60;
+            border-right: 3px solid var(--x5-cyan);
+        }
+
+        .msg-system {
+            align-self: center;
+            background: rgba(255, 145, 0, 0.08);
+            border: 1px dashed rgba(255, 145, 0, 0.3);
+            color: var(--x5-orange);
+            font-size: 12px;
+            padding: 8px 14px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .msg-sender {
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .msg-lead .msg-sender {
+            color: var(--x5-accent);
+        }
+
+        .msg-user .msg-sender {
+            color: var(--x5-cyan);
+        }
+
+        .msg-content {
+            font-family: var(--font-sans);
+            font-size: 14px;
+            white-space: pre-wrap;
+            color: #dce3eb;
+        }
+
+        .msg-content code {
+            font-family: var(--font-mono);
+            background: #0a0f16;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            color: var(--x5-cyan);
+            border: 1px solid #1a2536;
+        }
+
+        .msg-content pre {
+            background: #080c12;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: #79c0ff;
+        }
+
+        /* Preset Question Buttons */
+        .quick-prompts {
+            padding: 10px 20px;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .prompt-btn {
+            background: #111a26;
+            border: 1px solid var(--border-color);
+            color: #8da2b5;
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font-mono);
+        }
+
+        .prompt-btn:hover {
+            border-color: var(--x5-accent);
+            color: #fff;
+            background: rgba(0, 230, 118, 0.08);
+        }
+
+        /* Input Box */
+        .chat-input-bar {
+            padding: 14px 20px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            padding: 10px 14px;
+            border-radius: 4px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .terminal-input:focus {
+            border-color: var(--x5-accent);
+            box-shadow: 0 0 8px rgba(0, 230, 118, 0.2);
+        }
+
+        .send-btn {
+            background: var(--x5-accent);
+            color: #071018;
+            border: none;
+            padding: 0 20px;
+            font-weight: 700;
+            font-size: 13px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            font-family: var(--font-mono);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .send-btn:hover {
+            background: #39ff88;
+        }
+
+        .send-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Right Telemetry Column */
+        .cluster-widget {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .cluster-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .metric-bar-bg {
+            height: 4px;
+            background: #141c28;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .metric-bar-fill {
+            height: 100%;
+            background: var(--x5-accent);
+            width: 45%;
+        }
+
+        .log-stream {
+            background: #06090e;
+            border: 1px solid #141f2e;
+            padding: 10px;
+            font-size: 11px;
+            color: #5d758c;
+            border-radius: 4px;
+            height: 220px;
+            overflow-y: hidden;
+            font-family: var(--font-mono);
+            display: flex;
+            flex-direction: column-reverse;
+        }
+
+        .log-stream div {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 3px;
+        }
+
+        .log-stream .ok { color: var(--x5-green); }
+        .log-stream .warn { color: var(--x5-orange); }
+        .log-stream .info { color: var(--x5-cyan); }
+
+        /* Terminal Prompt Accent */
+        .prompt-symbol {
+            color: var(--x5-accent);
+            font-weight: bold;
+            margin-right: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="brand-block">
+            <span class="badge-x5">X5 MEDIA</span>
+            <div>
+                <div class="brand-title">Lead DevOps / Platform Engineer Core</div>
+                <div class="brand-sub">X5 Group · Media & AdTech Platform Unit · Moscow DC & Hybrid Cloud</div>
+            </div>
+        </div>
+        <div class="header-meta">
+            <div><span class="status-dot"></span>PROD CLUSTERS: STABLE</div>
+            <div>ROLE: <strong>LEAD_DEVOPS_ENG</strong></div>
+            <a href="/" class="nav-back">← Назад на сайт dropdpi.ink</a>
+        </div>
+    </header>
+
+    <!-- 3-Column Layout -->
+    <div class="workspace">
+        
+        <!-- Left Column: Engineer Profile & Scope -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>// Lead Profile</span>
+                <span class="highlight">ACTIVE</span>
+            </div>
+            <div class="panel-body">
+                
+                <div class="lead-card">
+                    <div class="lead-avatar-row">
+                        <div class="avatar-box">X5</div>
+                        <div>
+                            <div class="lead-info-name">Alexander / Lead Platform</div>
+                            <div class="lead-info-role">Lead DevOps & Platform Lead</div>
+                        </div>
+                    </div>
+                    <ul class="meta-list">
+                        <li><span class="label">Организация:</span> <span class="val">X5 Group (X5 Media)</span></li>
+                        <li><span class="label">Локация:</span> <span class="val">Москва (Dev-контур / ЦОД)</span></li>
+                        <li><span class="label">Подразделение:</span> <span class="val">AdTech, Food.ru, RetailMedia</span></li>
+                        <li><span class="label">Инфраструктура:</span> <span class="val">K8s, GitOps, Cilium, Kafka</span></li>
+                        <li><span class="label">Фокус:</span> <span class="val">CI/CD, Dev-контур, SRE, Безопасность</span></li>
+                    </ul>
+                </div>
+
+                <div class="section-subhead">Продукты и контуры X5 Media</div>
+                <div class="service-pill-list">
+                    <div class="service-pill active">Food.ru Platform</div>
+                    <div class="service-pill active">X5 Блогер (AdTech)</div>
+                    <div class="service-pill">DSP / SSP Real-time</div>
+                    <div class="service-pill">Индор-экраны ТС</div>
+                    <div class="service-pill">Dev-контур k8s</div>
+                    <div class="service-pill">Кэш-шлюзы & CDN</div>
+                </div>
+
+                <div class="section-subhead">Стек Platform Engineering</div>
+                <ul class="meta-list" style="font-size:11px;">
+                    <li><span class="label">Оркестрация:</span> <span class="val">K8s, Helm, ArgoCD, Talos</span></li>
+                    <li><span class="label">CI/CD:</span> <span class="val">GitLab CI Runner, Kaniko, Sonar</span></li>
+                    <li><span class="label">Сети:</span> <span class="val">Cilium eBPF, Envoy, Istio Ingress</span></li>
+                    <li><span class="label">Мониторинг:</span> <span class="val">VictoriaMetrics, Grafana, Alertmanager</span></li>
+                    <li><span class="label">Sec & Reg:</span> <span class="val">Vault, Trivy, Harbor, Kyverno</span></li>
+                </ul>
+
+                <div class="section-subhead" style="margin-top:20px;">Памятка соискателю Junior / Middle</div>
+                <p style="font-size:11.5px; color:var(--text-dim); line-height:1.5;">
+                    «Мы в X5 Media ценим самостоятельность, понимание сети под капотом Linux, умение дебажить поды через cgroups/iptables и ответственность за релизы в прод без даунтаймов.»
+                </p>
+
+            </div>
+        </div>
+
+        <!-- Center Column: Direct Dialogue Terminal -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>// Интерактивная консоль с Lead DevOps X5 Media</span>
+                <span>STATUS: <span style="color:var(--x5-accent);">ONLINE</span></span>
+            </div>
+
+            <div class="chat-container">
+                <div class="messages-scroll" id="chatBox">
+                    
+                    <div class="msg-bubble msg-lead">
+                        <div class="msg-sender">
+                            <span>⚡ Lead DevOps / Platform Engineer · X5 Media (Москва)</span>
+                        </div>
+                        <div class="msg-content">Привет! Я ведущий **Lead DevOps / Platform Engineer** в подразделении **X5 Media** (X5 Group, Москва). 
+
+Мы отвечаем за отказоустойчивость, Dev-контуры, масштабируемые K8s-кластеры, автоматизацию CI/CD в GitLab и инфраструктуру больших медиа- и adtech-платформ X5 Group (включая Food.ru, платформу «X5 Блогер», сервисы таргетированной рекламы и аналитики для торговых сетей).
+
+Задавай любой вопрос:
+- Про архитектуру наших сервисов и Dev-контуров
+- Техническое собеседование: что мы спрашиваем у Junior / Middle DevOps
+- Как настроен CI/CD, Kubernetes, трассировка инцидентов и безопасность
+- Разбор боевой задачи, скрипта или ошибки в k8s/Docker/Linux</div>
+                    </div>
+
+                </div>
+
+                <!-- Quick Prompts -->
+                <div class="quick-prompts">
+                    <button class="prompt-btn" onclick="askQuick('Чем занимается DevOps в X5 Media?')">🏢 О платформе X5 Media</button>
+                    <button class="prompt-btn" onclick="askQuick('Что вы спрашиваете на собеседовании Junior DevOps?')">🎯 Собеседование Junior</button>
+                    <button class="prompt-btn" onclick="askQuick('Как устроен Dev-контур и деплой в k8s?')">☸️ Архитектура Dev-контура</button>
+                    <button class="prompt-btn" onclick="askQuick('Дай боевую задачу по k8s для проверки')">🧪 Боевая задачка</button>
+                    <button class="prompt-btn" onclick="askQuick('Какие требования к Bash/Python и БД?')">💻 Bash / Python / Базы</button>
+                </div>
+
+                <!-- Input -->
+                <div class="chat-input-bar">
+                    <span class="prompt-symbol">&gt;</span>
+                    <input type="text" id="userInput" class="terminal-input" placeholder="Введите ваш вопрос ведущему инженеру X5 Media..." onkeydown="handleKey(event)" autocomplete="off">
+                    <button class="send-btn" onclick="sendMessage()">
+                        <span>SEND</span>
+                        <span>↵</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Live Telemetry & Dev-контур status -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>// Telemetry & Cluster State</span>
+            </div>
+            <div class="panel-body">
+                
+                <div class="cluster-widget">
+                    <div class="cluster-title">
+                        <span>k8s-media-dev-msk01</span>
+                        <span style="color:var(--x5-accent);">READY</span>
+                    </div>
+                    <div class="metric-row">
+                        <span style="color:var(--text-dim)">Nodes (talos/linux):</span>
+                        <span>24 / 24</span>
+                    </div>
+                    <div class="metric-row">
+                        <span style="color:var(--text-dim)">Pods Running:</span>
+                        <span>642</span>
+                    </div>
+                    <div class="metric-row">
+                        <span style="color:var(--text-dim)">CPU Reservation:</span>
+                        <span>54%</span>
+                    </div>
+                    <div class="metric-bar-bg">
+                        <div class="metric-bar-fill" style="width: 54%;"></div>
+                    </div>
+                    <div class="metric-row">
+                        <span style="color:var(--text-dim)">RAM Utilization:</span>
+                        <span>68%</span>
+                    </div>
+                    <div class="metric-bar-bg">
+                        <div class="metric-bar-fill" style="width: 68%; background: var(--x5-cyan);"></div>
+                    </div>
+                </div>
+
+                <div class="cluster-widget">
+                    <div class="cluster-title">
+                        <span>GitLab CI Pipelines</span>
+                        <span style="color:var(--x5-cyan);">18 ACTIVE</span>
+                    </div>
+                    <div class="metric-row">
+                        <span style="color:var(--text-dim)">Food.ru Dev Build:</span>
+                        <span style="color:var(--x5-green);">PASS #4192</span>
+                    </div>
+                    <div class="metric-row">
+                        <span style="color:var(--text-dim)">AdTech DSP Delivery:</span>
+                        <span style="color:var(--x5-green);">DEPLOYING</span>
+                    </div>
+                    <div class="metric-row">
+                        <span style="color:var(--text-dim)">Kyverno Policy Engine:</span>
+                        <span style="color:var(--x5-green);">ENFORCED</span>
+                    </div>
+                </div>
+
+                <div class="section-subhead">Live Cluster Event Stream</div>
+                <div class="log-stream" id="logStream">
+                    <div>[22:15:01] <span class="info">INFO</span> kube-scheduler: Scaled pod food-ru-auth to replica 4</div>
+                    <div>[22:14:48] <span class="ok">OK</span> gitlab-runner-04: Kaniko image build push -> harbor.x5.ru/media/adtech:v2.19</div>
+                    <div>[22:14:12] <span class="info">INFO</span> vault-agent: Secret renewed for lease 72h (food-db-creds)</div>
+                    <div>[22:13:55] <span class="warn">WARN</span> ingress-envoy: 499 client closed connection on /api/v1/telemetry</div>
+                    <div>[22:13:10] <span class="ok">OK</span> cert-manager: Certificate renewed *.media.x5.ru</div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
+
+        // Lead Engineer Knowledge Base & Responses
+        const LEAD_KNOWLEDGE = [
+            {
+                keywords: ["чем занима", "о платформе", "x5 media", "подразделен", "кто ты", "роль"],
+                reply: `В **X5 Media** мы объединяем цифровые и физические рекламные каналы крупнейшего ритейлера страны (сети «Пятёрочка», «Перекрёсток», «Чижик», экосистема Food.ru и медиа-сервисы).\n\nКак Lead DevOps / Platform Engineer, я держу руку на пульсе платформенного слоя:\n1. **Dev-контуры и K8s**: Предоставляем десяткам продуктовых команд изолированные, самовосстанавливающиеся среды по модели Platform-as-a-Service.\n2. **GitLab CI/CD**: Скорость доставки от мерж-реквеста до тестирования без ручной магии.\n3. **Информационная безопасность**: Сканирование контейнеров (Trivy), Vault для динамических секретов, строгие политики Kyverno/NetworkPolicy.\n4. **Отказоустойчивость и мониторинг**: SRE-практики, SLI/SLO, трассировка сложных AdTech запросов с миллионными RPS.`
+            },
+            {
+                keywords: ["собеседован", "junior", "спрашива", "вопрос", "навык", "ожида", "требован"],
+                reply: `На собеседовании на позицию **Junior DevOps Engineer в X5 Media** мы не устраиваем академических допросов, но проверяем фундаментальную базу:\n\n1. **Linux & Networks:**\n   • Что происходит, когда процесс падает по OOMKilled в Linux и в K8s?\n   • Как пройти трафик от сетевой карты хоста до пода (iptables, cgroups, veth-пара)?\n   • DNS: как pod резолвит имя через CoreDNS / resolv.conf (ndots)?\n\n2. **Docker & Containers:**\n   • Разница между CMD и ENTRYPOINT, multi-stage сборки, оптимизация слоев, безопасность (не запускать под root).\n\n3. **Kubernetes:**\n   • Deployment vs StatefulSet vs DaemonSet. Жизненный цикл Pod (Pending, CrashLoopBackOff, ImagePullBackOff).\n   • Зачем нужны liveness, readiness и startup probes.\n\n4. **GitLab CI & Автоматизация:**\n   • Как организовать кэш и артефакты, разница between rules и only/except, работа с Docker-in-Docker / Kaniko.\n   • Скрипты: сможешь ли написать Bash/Python скрипт для парсинга логов или чистки старых образов в Harbor.`
+            },
+            {
+                keywords: ["dev-контур", "k8s", "архитектур", "кластер", "деплой"],
+                reply: `Наш **Dev-контур** в X5 Media устроен по принципу динамических окружений (Review Apps):\n\n• **GitOps & Helm:** Все манифесты в Git. Любой мерж-реквест разворачивает временный namespace в Dev-кластере k8s.\n• **Cilium CNI:** Мы используем eBPF для высокой скорости сетевой маршрутизации и строгой изоляции между сервисами через CiliumNetworkPolicy.\n• **Ingress & TLS:** Envoy / Ingress-NGINX с динамическими sub-доменами для разработчиков (например, \`pr-42.dev.media.x5.ru\`).\n• **Базы данных в Dev:** Легковесные операторы PostgreSQL (CloudNativePG / Zalando) с seed-данными для тестирования ad-метрик без нагрузки на прод.`
+            },
+            {
+                keywords: ["задач", "боевая", "проверк", "кейс", "тест", "crashloop"],
+                reply: `Вот реальный кейс из жизни Dev-контура X5 Media. Решишь?\n\n**Ситуация:**\nРазработчик задеплоил сервис \`food-ad-banner\` в Dev-контур Kubernetes. Под падает в статус **CrashLoopBackOff** через 3 секунды после запуска.\n\nКоманда \`kubectl logs food-ad-banner-7c94b-xk91\` показывает:\n\`FATAL: connect ECONNREFUSED 10.96.0.10:53 - unable to resolve postgres-cluster-dev\`\n\n**Вопрос от Lead DevOps:**\nКакие 3 шага ты предпримешь прямо сейчас с помощью kubectl/bash, чтобы локализовать и устранить проблему?`
+            },
+            {
+                keywords: ["bash", "python", "бд", "базы", "скрипт"],
+                reply: `В команде X5 Media мы пишем автоматизацию на **Bash и Python**:\n\n• **Bash:** Однострочники и утилиты инициализации, health-check скрипты в контейнерах, preStop хуки, миграции.\n• **Python:** Внутренние CLI-утилиты для платформистов (через \`click\` / \`argparse\`), боты оповещений об инцидентах, скрипты ротации тестовых данных и интеграция с GitLab API / Vault API.\n• **БД (PostgreSQL / ClickHouse / Redis):** Базовое администрирование — понимание пулинга соединений (PgBouncer), мониторинг bloat, репликация, чтение \`pg_stat_activity\`, бэкапы через WAL-G.`
+            }
+        ];
+
+        function addMessage(sender, text, type = 'lead') {
+            const bubble = document.createElement('div');
+            bubble.classList.add('msg-bubble', type === 'lead' ? 'msg-lead' : 'msg-user');
+
+            const senderRow = document.createElement('div');
+            senderRow.classList.add('msg-sender');
+            senderRow.innerHTML = type === 'lead' 
+                ? '<span>⚡ Lead DevOps / Platform Engineer · X5 Media</span>'
+                : '<span>👤 Инженер / Соискатель</span>';
+
+            const content = document.createElement('div');
+            content.classList.add('msg-content');
+            content.innerText = text;
+
+            bubble.appendChild(senderRow);
+            bubble.appendChild(content);
+            chatBox.appendChild(bubble);
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleKey(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function askQuick(text) {
+            userInput.value = text;
+            sendMessage();
+        }
+
+        function sendMessage() {
+            const query = userInput.value.trim();
+            if (!query) return;
+
+            addMessage('user', query, 'user');
+            userInput.value = '';
+
+            // Simulate Lead typing
+            setTimeout(() => {
+                const lower = query.toLowerCase();
+                let matched = null;
+
+                for (const item of LEAD_KNOWLEDGE) {
+                    if (item.keywords.some(k => lower.includes(k))) {
+                        matched = item.reply;
+                        break;
+                    }
+                }
+
+                if (!matched) {
+                    matched = `Отличный вопрос по стеку X5 Media!\n\nКак Lead DevOps, отвечу так: в инфраструктуре платформы X5 Media ключевое правило — автоматизировать всё, что делается руками больше двух раз.\n\nПо твоему запросу («${query}») я рекомендую:\n1. Проверить манифесты и логи в Dev-контуре (\`kubectl describe pod\`, логи CoreDNS/Ingress);\n2. Убедиться, что CI/CD пайплайн в GitLab отрабатывает идемпотентно;\n3. Если это вопрос подготовки к нашему собеседованию — сделай акцент на знании Linux internals (cgroups, namespaces, systemd) и сетевом стеке k8s.\n\nЗадай уточняющий вопрос или нажми одну из кнопок быстрых тем выше!`;
+                }
+
+                addMessage('lead', matched, 'lead');
+            }, 500);
+        }
+
+        // Live Log simulation
+        const sampleLogs = [
+            () => `[${new Date().toLocaleTimeString()}] <span class="ok">OK</span> cilium-agent: NetworkPolicy applied for food-ru-prod`,
+            () => `[${new Date().toLocaleTimeString()}] <span class="info">INFO</span> gitlab-runner: Running pipeline #${Math.floor(Math.random()*1000 + 4000)} (x5-media/ad-platform)`,
+            () => `[${new Date().toLocaleTimeString()}] <span class="ok">OK</span> prometheus: Scraping 642 pod endpoints in 14ms`,
+            () => `[${new Date().toLocaleTimeString()}] <span class="warn">WARN</span> hpa: Food-ru blog traffic peak detected (+15% rps), scaling up`,
+            () => `[${new Date().toLocaleTimeString()}] <span class="ok">OK</span> vault: Rotated DB credentials for adtech-consumer`
+        ];
+
+        setInterval(() => {
+            const logBox = document.getElementById('logStream');
+            const randLog = sampleLogs[Math.floor(Math.random() * sampleLogs.length)]();
+            const div = document.createElement('div');
+            div.innerHTML = randLog;
+            logBox.prepend(div);
+            if (logBox.children.length > 25) {
+                logBox.removeChild(logBox.lastChild);
+            }
+        }, 4000);
+    </script>
+</body>
+</html>
