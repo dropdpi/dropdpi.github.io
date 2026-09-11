@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Follow The White Rabbit</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-color: #4af626;
+            --font-main: 'Courier New', Courier, monospace;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-size: 16px;
+        }
+        /* Scanline effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+        #terminal {
+            position: relative;
+            z-index: 10;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .line {
+            margin-bottom: 8px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .ascii {
+            white-space: pre;
+            line-height: 1.2;
+            margin: 15px 0;
+            color: var(--text-color);
+            text-shadow: 0 0 5px rgba(74, 246, 38, 0.5);
+        }
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1em;
+            background-color: var(--text-color);
+            vertical-align: text-bottom;
+            animation: blink 1s step-start infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        .choice-container { margin-top: 20px; display: none; }
+        .choice-btn {
+            background: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--text-color);
+            padding: 5px 15px;
+            font-family: inherit;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: all 0.2s;
+        }
+        .choice-btn:hover {
+            background: var(--text-color);
+            color: var(--bg-color);
+            box-shadow: 0 0 10px var(--text-color);
+        }
+        
+        .copy-btn {
+            margin-top: 15px;
+            background: var(--text-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 8px 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #key-box {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px dotted var(--text-color);
+            word-break: break-all;
+            background: #111;
+        }
+
+        .glitch {
+            animation: glitch-anim 0.2s infinite;
+        }
+        @keyframes glitch-anim {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 1px) }
+            40% { transform: translate(-1px, -1px) }
+            60% { transform: translate(2px, 1px) }
+            80% { transform: translate(1px, -2px) }
+            100% { transform: translate(0) }
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal"></div>
+
+    <script>
+        const terminal = document.getElementById("terminal");
+        const rabbitAscii = [
+            "      /\\ /|",
+            "     |||| |",
+            "      \\ | \\",
+            "  _ _ /  @ @",
+            "/    \\   =>X<=",
+            "/|      |   /",
+            "\\|     /__| |",
+            "  \\_____\\ \\__\\"
+        ];
+
+        const sequence = [
+            { text: "Wake up...", speed: 100, pause: 1500 },
+            { text: "The 9-to-5 loop has you.", speed: 50, pause: 1500 },
+            { text: "They log your traffic. They monitor your DNS.", speed: 50, pause: 1500 },
+            { text: "Follow the white rabbit.", speed: 80, pause: 1000 },
+            { type: "ascii", lines: rabbitAscii, speed: 150, pause: 1000 },
+            { text: "Knock, knock.", speed: 100, pause: 800 },
+            { text: "> Incoming connection request detected.", speed: 30, pause: 500 },
+            { text: "Activate untraceable VPN tunnel? (Y/N)", speed: 50, pause: 0 }
+        ];
+
+        let cursor;
+
+        function addCursor(parent) {
+            if (cursor) cursor.remove();
+            cursor = document.createElement("span");
+            cursor.className = "cursor";
+            parent.appendChild(cursor);
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function scrollToBottom() {
+            // Only scroll if we are close to the bottom to avoid hiding top text
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        }
+
+        async function typeText(text, speed, containerElement) {
+            const line = document.createElement("div");
+            line.className = "line";
+            containerElement.appendChild(line);
+            
+            for (let i = 0; i < text.length; i++) {
+                line.textContent += text[i];
+                addCursor(line);
+                if (text[i] !== ' ') {
+                    await sleep(speed + (Math.random() * 30 - 15));
+                }
+            }
+            cursor.remove();
+            scrollToBottom();
+            return line;
+        }
+
+        async function printAscii(lines, speed, containerElement) {
+            const container = document.createElement("div");
+            container.className = "ascii";
+            containerElement.appendChild(container);
+            
+            for (let line of lines) {
+                const lineDiv = document.createElement("div");
+                lineDiv.textContent = line;
+                container.appendChild(lineDiv);
+                addCursor(lineDiv);
+                await sleep(speed);
+                scrollToBottom();
+            }
+            cursor.remove();
+        }
+
+        async function createChoices() {
+            const container = document.createElement("div");
+            container.className = "choice-container";
+            
+            const btnY = document.createElement("button");
+            btnY.className = "choice-btn";
+            btnY.textContent = "[ Y ] Accept";
+            
+            const btnN = document.createElement("button");
+            btnN.className = "choice-btn";
+            btnN.textContent = "[ N ] Reject";
+            
+            container.appendChild(btnY);
+            container.appendChild(btnN);
+            terminal.appendChild(container);
+            
+            container.style.display = "block";
+            scrollToBottom();
+
+            return new Promise(resolve => {
+                btnY.onclick = () => {
+                    container.style.display = "none";
+                    resolve("Y");
+                };
+                btnN.onclick = () => {
+                    container.style.display = "none";
+                    resolve("N");
+                };
+            });
+        }
+
+        async function runSequence() {
+            for (let step of sequence) {
+                if (step.type === "ascii") {
+                    await printAscii(step.lines, step.speed, terminal);
+                } else {
+                    await typeText(step.text, step.speed, terminal);
+                }
+                if (step.pause) await sleep(step.pause);
+            }
+
+            const choice = await createChoices();
+            if (choice === "Y") {
+                document.body.classList.add("glitch");
+                await sleep(300);
+                document.body.classList.remove("glitch");
+                
+                await typeText("> Patching into the mainframe... [OK]", 30, terminal);
+                await typeText("> Bypassing DPI... [OK]", 30, terminal);
+                await typeText("> Protocol: VLESS / XTLS-Reality", 30, terminal);
+                await sleep(1000);
+                await typeText("Welcome to the real world.", 60, terminal);
+                await sleep(500);
+
+                await typeText("> Generating real key...", 30, terminal);
+                
+                // Fetch real key from API
+                try {
+                    const randomId = "matrix_" + Math.random().toString(36).substring(2, 8);
+                    const res = await fetch("/api/get_test_vless", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: randomId })
+                    });
+                    const data = await res.json();
+                    
+                    if (data.status === "ok") {
+                        const keyBox = document.createElement("div");
+                        keyBox.id = "key-box";
+                        keyBox.textContent = data.link;
+                        terminal.appendChild(keyBox);
+                        
+                        const copyBtn = document.createElement("button");
+                        copyBtn.className = "copy-btn";
+                        copyBtn.textContent = "[ COPY KEY ]";
+                        copyBtn.onclick = () => {
+                            navigator.clipboard.writeText(data.link);
+                            copyBtn.textContent = "[ COPIED ! ]";
+                            setTimeout(() => { copyBtn.textContent = "[ COPY KEY ]" }, 2000);
+                        };
+                        
+                        const actionDiv = document.createElement("div");
+                        actionDiv.style.marginTop = "10px";
+                        actionDiv.appendChild(copyBtn);
+                        
+                        const karingBtn = document.createElement("button");
+                        karingBtn.className = "copy-btn";
+                        karingBtn.style.marginLeft = "10px";
+                        karingBtn.style.background = "#fff";
+                        karingBtn.style.color = "#000";
+                        karingBtn.textContent = "[ OPEN IN KARING ]";
+                        karingBtn.onclick = () => {
+                            window.location.href = data.link;
+                        };
+                        actionDiv.appendChild(karingBtn);
+                        
+                        terminal.appendChild(actionDiv);
+                        scrollToBottom();
+                        
+                        await sleep(500);
+                        await typeText("> Link allocated. Download Karing App to connect.", 40, terminal);
+                    } else {
+                        await typeText("> Error communicating with Node. System overloaded.", 50, terminal);
+                    }
+                } catch (e) {
+                    await typeText("> Error communicating with Node. " + e.message, 50, terminal);
+                }
+
+            } else {
+                await typeText("> Ignorance is bliss.", 50, terminal);
+                await sleep(500);
+                await typeText("> Connection terminated.", 50, terminal);
+                await sleep(500);
+                document.body.innerHTML = "";
+            }
+        }
+
+        window.onload = () => {
+            setTimeout(runSequence, 1000);
+        };
+    </script>
+</body>
+</html>
